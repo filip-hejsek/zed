@@ -3402,6 +3402,7 @@ mod test {
             "«one» two «one»",
         );
         cx.simulate_keystrokes("enter");
+        cx.run_until_parked();
         cx.assert_state("«oneˇ» two «oneˇ»", Mode::HelixNormal);
 
         // Confirming the selection closes the search bar and clears its highlights.
@@ -3429,6 +3430,44 @@ mod test {
         // cx.set_state("ˇstuff one two one", Mode::HelixNormal);
         // cx.simulate_keystrokes("s o n e enter");
         // cx.assert_state("ˇstuff one two one", Mode::HelixNormal);
+    }
+
+    #[gpui::test]
+    async fn test_helix_select_regex_then_next_match(cx: &mut gpui::TestAppContext) {
+        let mut cx = VimTestContext::new(cx, true).await;
+        cx.enable_helix();
+
+        // `n` after `s` searches the whole buffer, not just the selection `s` searched in.
+        cx.set_state("ˇone two one\nthree one", Mode::HelixNormal);
+        cx.simulate_keystrokes("x");
+        cx.simulate_keystrokes("s o n e");
+        cx.run_until_parked();
+        cx.simulate_keystrokes("enter");
+        cx.run_until_parked();
+        cx.assert_state("«oneˇ» two «oneˇ»\nthree one", Mode::HelixNormal);
+
+        cx.simulate_keystrokes("n");
+        cx.run_until_parked();
+        cx.assert_state("one two one\nthree «oneˇ»", Mode::HelixNormal);
+        cx.assert_editor_background_highlights(
+            HighlightKey::SearchWithinRange,
+            "one two one\nthree one",
+        );
+
+        cx.simulate_keystrokes("n");
+        cx.run_until_parked();
+        cx.assert_state("«oneˇ» two one\nthree one", Mode::HelixNormal);
+
+        // In select mode, `n` adds the next match to the existing selections.
+        cx.set_state("ˇone two one\nthree one", Mode::HelixNormal);
+        cx.simulate_keystrokes("x");
+        cx.simulate_keystrokes("s o n e");
+        cx.run_until_parked();
+        cx.simulate_keystrokes("enter");
+        cx.run_until_parked();
+        cx.simulate_keystrokes("v n");
+        cx.run_until_parked();
+        cx.assert_state("«oneˇ» two «oneˇ»\nthree «oneˇ»", Mode::HelixSelect);
     }
 
     #[gpui::test]
