@@ -8623,6 +8623,35 @@ fn version_control_page() -> SettingsPage {
         ]
     }
 
+    fn commit_message_section() -> [SettingsPageItem; 2] {
+        [
+            SettingsPageItem::SectionHeader("Commit Messages"),
+            SettingsPageItem::SettingItem(SettingItem {
+                title: "Commit Message Format",
+                description: "Whether commit messages are rendered as Markdown or shown exactly as written.",
+                field: Box::new(SettingField {
+                    organization_override: None,
+                    json_path: Some("git.commit_message_format"),
+                    pick: |settings_content| {
+                        settings_content
+                            .git
+                            .as_ref()?
+                            .commit_message_format
+                            .as_ref()
+                    },
+                    write: |settings_content, value, _| {
+                        settings_content
+                            .git
+                            .get_or_insert_default()
+                            .commit_message_format = value;
+                    },
+                }),
+                metadata: None,
+                files: USER,
+            }),
+        ]
+    }
+
     SettingsPage {
         title: "Version Control",
         items: concat_sections![
@@ -8633,6 +8662,7 @@ fn version_control_page() -> SettingsPage {
             branch_picker_section(),
             file_diff_section(),
             git_hunks_section(),
+            commit_message_section(),
         ],
     }
 }

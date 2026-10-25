@@ -4,6 +4,7 @@ use crate::{
         CUSTOM_GIT_COMMANDS_DOCS_SLUG, CommitContextMenuData, CommitContextMenuSource,
         commit_context_menu, git_context_menu_tasks, git_task_context,
     },
+    commit_message::CommitMessage,
     commit_tooltip::CommitAvatar,
     commit_view::CommitView,
     git_status_icon,
@@ -26,7 +27,6 @@ use gpui::{
     px, uniform_list,
 };
 use language::line_diff;
-use markdown::{Markdown, MarkdownElement};
 use menu::{Cancel, SelectFirst, SelectLast, SelectNext, SelectPrevious};
 use picker::{Picker, PickerDelegate};
 use project::{
@@ -1447,7 +1447,7 @@ impl RefMenuEntry {
 
 struct DetailPanelCommitMessage {
     sha: Oid,
-    message: Entity<Markdown>,
+    message: Entity<CommitMessage>,
     scroll_handle: ScrollHandle,
 }
 
@@ -2459,7 +2459,7 @@ impl GitGraph {
             .log_err();
         self.selected_commit_message = Some(DetailPanelCommitMessage {
             sha,
-            message: cx.new(|cx| Markdown::new(message, languages, None, cx)),
+            message: cx.new(|cx| CommitMessage::new(message, languages, cx)),
             scroll_handle: ScrollHandle::new(),
         });
         self._selected_commit_message_task = None;
@@ -4290,7 +4290,7 @@ impl GitGraph {
                                 .max_h(line_height * 12.)
                                 .overflow_y_scroll()
                                 .track_scroll(scroll_handle)
-                                .child(MarkdownElement::new(message.clone(), message_style)),
+                                .child(message.clone()),
                         )
                         .vertical_scrollbar_for(scroll_handle, window, cx),
                 )

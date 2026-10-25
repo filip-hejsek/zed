@@ -492,6 +492,10 @@ pub struct GitSettings {
     ///
     /// Default: file_name_first
     pub path_style: GitPathStyle,
+    /// How commit messages are displayed.
+    ///
+    /// Default: markdown
+    pub commit_message_format: settings::CommitMessageFormat,
     /// Whether to show the stage and restore buttons on diff hunks.
     ///
     /// Default: true
@@ -714,6 +718,7 @@ impl Settings for ProjectSettings {
             hunk_style: git.hunk_style.unwrap(),
             diff_base: git.diff_base.unwrap_or_default(),
             path_style: git.path_style.unwrap().into(),
+            commit_message_format: git.commit_message_format.unwrap(),
             show_stage_restore_buttons: git.show_stage_restore_buttons.unwrap_or(true),
             worktree_directory: git
                 .worktree_directory

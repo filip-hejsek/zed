@@ -1,7 +1,7 @@
+use crate::commit_message::CommitMessage;
 use crate::commit_view::CommitView;
 use anyhow::Result;
 use askpass::AskPassDelegate;
-use editor::hover_markdown_style;
 use futures::Future;
 use git::blame::BlameEntry;
 use git::repository::CommitSummary;
@@ -12,7 +12,6 @@ use gpui::{
     AbsoluteLength, App, Asset, Element, Entity, MouseButton, ParentElement, Pixels, Render,
     ScrollHandle, StatefulInteractiveElement, Task, WeakEntity, Window, prelude::*,
 };
-use markdown::{Markdown, MarkdownElement};
 use notifications::status_toast::StatusToast;
 use project::git_store::{Repository, UnshallowState};
 use settings::Settings;
@@ -217,7 +216,7 @@ impl Asset for CommitAvatarAsset {
 pub struct CommitTooltip {
     commit: CommitDetails,
     scroll_handle: ScrollHandle,
-    markdown: Entity<Markdown>,
+    message: Entity<CommitMessage>,
     repository: Entity<Repository>,
     workspace: WeakEntity<Workspace>,
 }
@@ -262,24 +261,25 @@ impl CommitTooltip {
         workspace: WeakEntity<Workspace>,
         cx: &mut Context<Self>,
     ) -> Self {
-        let markdown = cx.new(|cx| {
-            Markdown::new(
+        let scroll_handle = ScrollHandle::new();
+        let message = cx.new(|cx| {
+            CommitMessage::new(
                 commit
                     .message
                     .as_ref()
                     .map(|message| message.message.clone())
                     .unwrap_or_default(),
                 None,
-                None,
                 cx,
             )
+            .with_scroll_handle(scroll_handle.clone())
         });
         Self {
             commit,
             repository,
             workspace,
-            scroll_handle: ScrollHandle::new(),
-            markdown,
+            scroll_handle,
+            message,
         }
     }
 }
@@ -306,20 +306,11 @@ impl Render for CommitTooltip {
             local_offset,
             time_format::TimestampFormat::MediumAbsolute,
         );
-        let markdown_style = {
-            let style = hover_markdown_style(window, cx);
-            style
-        };
-
         let message = self
             .commit
             .message
             .as_ref()
-            .map(|_| {
-                MarkdownElement::new(self.markdown.clone(), markdown_style)
-                    .scroll_handle(self.scroll_handle.clone())
-                    .into_any()
-            })
+            .map(|_| self.message.clone().into_any_element())
             .unwrap_or("<no commit message>".into_any());
 
         let pull_request = self

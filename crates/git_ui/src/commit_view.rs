@@ -3,7 +3,7 @@ use buffer_diff::BufferDiff;
 use collections::HashMap;
 use editor::{
     Addon, Editor, EditorEvent, EditorSettings, HiddenDiffHunkRenderer, MultiBuffer,
-    SplittableEditor, hover_markdown_style, multibuffer_context_lines,
+    SplittableEditor, multibuffer_context_lines,
 };
 use futures_lite::future::yield_now;
 use git::repository::{CommitDetails, RepoPath};
@@ -22,7 +22,6 @@ use language::{
     Buffer, Capability, DiskState, File, LanguageRegistry, LineEnding, OffsetRangeExt as _,
     ReplicaId, Rope, TextBuffer,
 };
-use markdown::{Markdown, MarkdownElement};
 use multi_buffer::PathKey;
 use project::{
     Project, ProjectPath, WorktreeId,
@@ -45,6 +44,7 @@ use workspace::{
     searchable::SearchableItemHandle,
 };
 
+use crate::commit_message::CommitMessage;
 use crate::commit_tooltip::CommitAvatar;
 use crate::git_panel::GitPanel;
 
@@ -76,7 +76,7 @@ pub fn init(cx: &mut App) {
 pub struct CommitView {
     commit: CommitDetails,
     editor: Entity<SplittableEditor>,
-    message: Entity<Markdown>,
+    message: Entity<CommitMessage>,
     message_expanded: bool,
     message_scroll_handle: ScrollHandle,
     stash: Option<usize>,
@@ -309,12 +309,7 @@ impl CommitView {
         });
 
         let message = cx.new(|cx| {
-            Markdown::new(
-                commit.message.clone(),
-                Some(language_registry.clone()),
-                None,
-                cx,
-            )
+            CommitMessage::new(commit.message.clone(), Some(language_registry.clone()), cx)
         });
 
         let editor = cx.new(|cx| {
@@ -870,8 +865,6 @@ impl CommitView {
             return None;
         }
 
-        let markdown_style = hover_markdown_style(window, cx);
-
         let is_expanded = self.message_expanded;
 
         let has_more = message.contains('\n');
@@ -900,7 +893,7 @@ impl CommitView {
                                         .overflow_y_scroll()
                                         .track_scroll(&self.message_scroll_handle)
                                 })
-                                .child(MarkdownElement::new(self.message.clone(), markdown_style)),
+                                .child(self.message.clone()),
                         )
                         .vertical_scrollbar_for(&self.message_scroll_handle, window, cx),
                 ),
@@ -1354,12 +1347,7 @@ impl Item for CommitView {
             });
             let language_registry = project.read(cx).languages().clone();
             let message = cx.new(|cx| {
-                Markdown::new(
-                    self.commit.message.clone(),
-                    Some(language_registry),
-                    None,
-                    cx,
-                )
+                CommitMessage::new(self.commit.message.clone(), Some(language_registry), cx)
             });
             Self {
                 editor,

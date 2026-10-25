@@ -2862,6 +2862,42 @@ Example:
 }
 ```
 
+### Commit Message Format
+
+- Description: How commit messages are displayed in the commit view, the git graph and blame tooltips.
+- Setting: `commit_message_format`
+- Default:
+
+```json [settings]
+{
+  "git": {
+    "commit_message_format": "markdown"
+  }
+}
+```
+
+**Options**
+
+1. Render the message as Markdown. Consecutive lines are joined into paragraphs, so hard-wrapped messages reflow to the available width. Git trailers at the end of the message (such as `Co-authored-by:` or `Signed-off-by:`) are kept one per line:
+
+```json [settings]
+{
+  "git": {
+    "commit_message_format": "markdown"
+  }
+}
+```
+
+2. Show the message exactly as written, keeping its line breaks:
+
+```json [settings]
+{
+  "git": {
+    "commit_message_format": "plain"
+  }
+}
+```
+
 ### Diff Base
 
 - Description: Whether git features show changes relative to HEAD (uncommitted changes) or to the default branch (all changes on the current branch). Also available in the editor controls menu as "Diff Against Default Branch".

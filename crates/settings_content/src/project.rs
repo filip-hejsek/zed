@@ -669,6 +669,11 @@ pub struct GitSettings {
     ///
     /// Default: file_name_first
     pub path_style: Option<GitPathStyle>,
+    /// How commit messages are displayed in the commit view, the git graph
+    /// and blame tooltips.
+    ///
+    /// Default: markdown
+    pub commit_message_format: Option<CommitMessageFormat>,
     /// Whether to show the stage and restore buttons on diff hunks.
     ///
     /// Default: true
@@ -891,6 +896,31 @@ pub enum GitPathStyle {
     FileNameFirst,
     /// Show full path first
     FilePathFirst,
+}
+
+#[with_fallible_options]
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    MergeFrom,
+    strum::VariantArray,
+    strum::VariantNames,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum CommitMessageFormat {
+    /// Render the message as Markdown, joining consecutive lines into
+    /// paragraphs. Git trailers are always shown one per line.
+    #[default]
+    Markdown,
+    /// Show the message exactly as written, keeping its line breaks.
+    Plain,
 }
 
 #[with_fallible_options]

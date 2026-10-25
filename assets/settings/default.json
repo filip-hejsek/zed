@@ -1885,6 +1885,15 @@
     // Should the name or path be displayed first in the git view.
     // "path_style": "file_name_first" or "file_path_first"
     "path_style": "file_name_first",
+    // How commit messages are displayed in the commit view, the git graph
+    // and blame tooltips.
+    //
+    // 1. Render as Markdown, joining wrapped lines into paragraphs.
+    //    Git trailers (e.g. "Co-authored-by: ...") are kept one per line:
+    //    "commit_message_format": "markdown"
+    // 2. Show the message exactly as written:
+    //    "commit_message_format": "plain"
+    "commit_message_format": "markdown",
     // Whether to show the stage and restore buttons on diff hunks.
     "show_stage_restore_buttons": true,
     // Directory where git worktrees are created, relative to the repository
