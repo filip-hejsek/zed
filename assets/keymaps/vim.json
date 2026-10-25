@@ -541,6 +541,10 @@
       "g u": "git::StageAndNext", // Zed specific
       "g shift-u": "git::UnstageAndNext", // Zed specific
 
+      // Bare `space` is vim's `WrappingRight`, which Helix doesn't have. Unbinding it
+      // also lets the space menu wait for the next key instead of timing out.
+      "space": null,
+
       // Window mode
       "space w v": "pane::SplitRight",
       "space w s": "pane::SplitDown",

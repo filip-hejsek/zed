@@ -2849,6 +2849,24 @@ mod test {
     }
 
     #[gpui::test]
+    async fn test_space_does_not_move_cursor(cx: &mut gpui::TestAppContext) {
+        let mut cx = VimTestContext::new(cx, true).await;
+        cx.enable_helix();
+
+        cx.set_state("«fooˇ» bar", Mode::HelixNormal);
+        cx.simulate_keystrokes("space");
+        cx.executor().advance_clock(Duration::from_secs(2));
+        cx.run_until_parked();
+        cx.assert_state("«fooˇ» bar", Mode::HelixNormal);
+
+        cx.set_state("«fooˇ» bar", Mode::HelixSelect);
+        cx.simulate_keystrokes("space");
+        cx.executor().advance_clock(Duration::from_secs(2));
+        cx.run_until_parked();
+        cx.assert_state("«fooˇ» bar", Mode::HelixSelect);
+    }
+
+    #[gpui::test]
     async fn test_helix_select_mode(cx: &mut gpui::TestAppContext) {
         let mut cx = VimTestContext::new(cx, true).await;
 
