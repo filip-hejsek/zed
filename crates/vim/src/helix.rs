@@ -1881,8 +1881,8 @@ mod test {
 
     use editor::{HighlightKey, MultiBufferOffset};
     use gpui::{
-        Bounds, DispatchEventResult, ElementInputHandler, KeyBinding, KeyDownEvent, Keystroke,
-        PlatformInput, PlatformInputHandler, UpdateGlobal, VisualTestContext,
+        Bounds, ClipboardItem, DispatchEventResult, ElementInputHandler, KeyBinding, KeyDownEvent,
+        Keystroke, PlatformInput, PlatformInputHandler, UpdateGlobal, VisualTestContext,
     };
     use indoc::indoc;
     use language::{CursorShape, Point};
@@ -2845,6 +2845,22 @@ mod test {
         cx.simulate_keystrokes("e"); // if we're in Select Mode, the selection should be extended to include ` baz`
         cx.simulate_keystrokes("shift-r");
 
+        cx.assert_state("foo hello worldˇ fizz", Mode::HelixNormal);
+    }
+
+    #[gpui::test]
+    async fn test_space_shift_r_replaces_selection(cx: &mut gpui::TestAppContext) {
+        let mut cx = VimTestContext::new(cx, true).await;
+        cx.enable_helix();
+
+        cx.write_to_clipboard(ClipboardItem::new_string("hello world".to_string()));
+        cx.set_state("foo «barˇ» baz", Mode::HelixNormal);
+        cx.simulate_keystrokes("space shift-r");
+        cx.assert_state("foo hello worldˇ baz", Mode::HelixNormal);
+
+        cx.set_state("foo «barˇ» baz fizz", Mode::HelixSelect);
+        cx.simulate_keystrokes("e");
+        cx.simulate_keystrokes("space shift-r");
         cx.assert_state("foo hello worldˇ fizz", Mode::HelixNormal);
     }
 

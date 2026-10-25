@@ -564,6 +564,7 @@
       "space h": "editor::SelectAllMatches",
       "space c": ["editor::ToggleComments", { "advance_downwards": false, "comment_empty_lines": false }],
       "space p": "editor::Paste",
+      "space shift-r": "editor::Paste",
       "space y": "editor::Copy",
       "space /": "pane::DeploySearch",
 
