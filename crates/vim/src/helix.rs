@@ -2859,11 +2859,26 @@ mod test {
         cx.run_until_parked();
         cx.assert_state("«fooˇ» bar", Mode::HelixNormal);
 
-        cx.set_state("«fooˇ» bar", Mode::HelixSelect);
+        // `space` is still pending, so the space menu chord completes.
+        cx.simulate_keystrokes("y");
+        cx.assert_state("«fooˇ» bar", Mode::HelixNormal);
+        assert_eq!(
+            cx.read_from_clipboard().and_then(|item| item.text()),
+            Some("foo".to_string())
+        );
+
+        cx.set_state("foo «barˇ»", Mode::HelixSelect);
         cx.simulate_keystrokes("space");
         cx.executor().advance_clock(Duration::from_secs(2));
         cx.run_until_parked();
-        cx.assert_state("«fooˇ» bar", Mode::HelixSelect);
+        cx.assert_state("foo «barˇ»", Mode::HelixSelect);
+
+        cx.simulate_keystrokes("y");
+        cx.assert_state("foo «barˇ»", Mode::HelixSelect);
+        assert_eq!(
+            cx.read_from_clipboard().and_then(|item| item.text()),
+            Some("bar".to_string())
+        );
     }
 
     #[gpui::test]
