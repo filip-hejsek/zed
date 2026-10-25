@@ -1887,7 +1887,7 @@ mod test {
     use indoc::indoc;
     use language::{CursorShape, Point};
     use project::FakeFs;
-    use search::{ProjectSearchView, project_search};
+    use search::{BufferSearchBar, ProjectSearchView, project_search};
     use serde_json::json;
     use settings::{SettingsStore, ThemeColorsContent, ThemeStyleContent};
     use theme::ActiveTheme as _;
@@ -3397,8 +3397,27 @@ mod test {
         cx.assert_state("«one two oneˇ»", Mode::HelixNormal);
         cx.simulate_keystrokes("s o n e");
         cx.run_until_parked();
+        cx.assert_editor_background_highlights(
+            HighlightKey::BufferSearchHighlights,
+            "«one» two «one»",
+        );
         cx.simulate_keystrokes("enter");
         cx.assert_state("«oneˇ» two «oneˇ»", Mode::HelixNormal);
+
+        // Confirming the selection closes the search bar and clears its highlights.
+        let search_bar = cx.update_workspace(|workspace, _, cx| {
+            workspace.active_pane().update(cx, |pane, cx| {
+                pane.toolbar()
+                    .read(cx)
+                    .item_of_type::<BufferSearchBar>()
+                    .expect("buffer search bar should be deployed")
+            })
+        });
+        cx.update_entity(search_bar, |search_bar, _, _| {
+            assert!(search_bar.is_dismissed());
+        });
+        cx.assert_editor_background_highlights(HighlightKey::BufferSearchHighlights, "one two one");
+        cx.assert_editor_background_highlights(HighlightKey::SearchWithinRange, "one two one");
 
         cx.simulate_keystrokes("x");
         cx.simulate_keystrokes("s");

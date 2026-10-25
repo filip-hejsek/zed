@@ -313,7 +313,9 @@ impl Vim {
             let search_bar = pane.toolbar().read(cx).item_of_type::<BufferSearchBar>()?;
             if self.search.helix_select {
                 search_bar.update(cx, |search_bar, cx| {
-                    search_bar.select_all_matches(&Default::default(), window, cx)
+                    search_bar.select_all_matches(&Default::default(), window, cx);
+                    // Helix doesn't keep matches highlighted once they become selections.
+                    search_bar.dismiss(&Default::default(), window, cx);
                 });
                 return None;
             }
