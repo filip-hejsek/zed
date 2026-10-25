@@ -4696,6 +4696,43 @@ mod test {
     }
 
     #[gpui::test]
+    async fn test_helix_insert_empty_line_clears_operator(cx: &mut gpui::TestAppContext) {
+        let mut cx = VimTestContext::new(cx, true).await;
+        cx.enable_helix();
+
+        cx.set_state(
+            indoc! {"
+            one
+            twˇo
+            three"},
+            Mode::HelixNormal,
+        );
+
+        cx.simulate_keystrokes("] space");
+        cx.assert_state(
+            indoc! {"
+            one
+            twˇo
+
+            three"},
+            Mode::HelixNormal,
+        );
+        assert_eq!(cx.active_operator(), None);
+
+        cx.simulate_keystrokes("[ space");
+        cx.assert_state(
+            indoc! {"
+            one
+
+            twˇo
+
+            three"},
+            Mode::HelixNormal,
+        );
+        assert_eq!(cx.active_operator(), None);
+    }
+
+    #[gpui::test]
     async fn test_helix_rename_uses_visible_cursor_position(cx: &mut gpui::TestAppContext) {
         let mut cx = VimTestContext::new_typescript(cx).await;
         cx.enable_helix();

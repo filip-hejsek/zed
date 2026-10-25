@@ -861,6 +861,9 @@ impl Vim {
         self.record_current_action(cx);
         let count = Vim::take_count(cx).unwrap_or(1);
         Vim::take_forced_motion(cx);
+        // Helix's `[ space`/`] space` run this under a pending operator, which
+        // only clears itself automatically for non-vim actions.
+        self.clear_operator(window, cx);
         self.update_editor(cx, |_, editor, cx| {
             editor.transact(window, cx, |editor, _, cx| {
                 let selections = editor.selections.all::<Point>(&editor.display_snapshot(cx));
@@ -890,6 +893,9 @@ impl Vim {
         self.record_current_action(cx);
         let count = Vim::take_count(cx).unwrap_or(1);
         Vim::take_forced_motion(cx);
+        // Helix's `[ space`/`] space` run this under a pending operator, which
+        // only clears itself automatically for non-vim actions.
+        self.clear_operator(window, cx);
         self.update_editor(cx, |_, editor, cx| {
             editor.transact(window, cx, |editor, window, cx| {
                 let display_map = editor.display_snapshot(cx);
